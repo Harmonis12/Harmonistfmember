@@ -58,10 +58,12 @@
       };
 
       try {
+        // Menggunakan fetch untuk mendapatkan data
         const response = await fetch(url, { headers: headers });
 
+        // Jika status response bukan 2xx, lemparkan error
         if (!response.ok) {
-          throw new Error('Gagal mengambil saldo');
+          throw new Error(`HTTP Error: ${response.status}`);
         }
 
         const result = await response.json();
@@ -86,7 +88,13 @@
           document.getElementById('message').innerHTML = 'Error: Terjadi kesalahan';
         }
       } catch (error) {
-        document.getElementById('message').innerHTML = `Error: ${error.message}`;
+        // Menangani semua jenis error yang terjadi selama request
+        console.error('Error:', error);  // Log error ke console untuk debugging
+        if (error.message.includes("Failed to fetch")) {
+          document.getElementById('message').innerHTML = 'Error: Gagal mengambil data. Periksa koneksi atau server.';
+        } else {
+          document.getElementById('message').innerHTML = `Error: ${error.message}`;
+        }
       }
     }
   </script>
