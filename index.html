@@ -29,6 +29,9 @@ if (isset($_POST['submit'])) {
     // Mengatur cURL untuk mengembalikan hasil response
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
+    // Pastikan menggunakan metode GET
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET");
+
     // Eksekusi request dan menyimpan hasilnya
     $hasil = curl_exec($ch);
 
