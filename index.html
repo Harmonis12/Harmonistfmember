@@ -86,7 +86,7 @@ if (isset($_POST['submit'])) {
         echo "<p><strong>Kesalahan:</strong> Pastikan ID User yang dimasukkan valid.</p>";
     } elseif (isset($responseData) && $responseData['code'] == 404) {
         // Menampilkan pesan jika data tidak ditemukan
-        echo "<p><strong>Data tidak ditemukan</strong> untuk ID User yang diberikan.</p>";
+        echo "<p><strong>Data tidak ditemukan untuk ID User yang diberikan.</strong></p>";
     } elseif (isset($responseData) && $responseData['code'] != 200) {
         // Menampilkan pesan kesalahan lainnya
         echo "<p><strong>Terjadi kesalahan saat mengakses API. Coba lagi nanti.</strong></p>";
