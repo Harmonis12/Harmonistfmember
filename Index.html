@@ -1,585 +1,97 @@
+<?php
+// Mengecek jika form telah disubmit
+if (isset($_POST['submit'])) {
+    // Mengambil nilai id_user dari form
+    $id_user = $_POST['id_user'];
+
+    // API key yang Anda dapatkan
+    $token = "MjFRanpESTgrSkxJbzFEOVgwUkh1SUUwdFNmazZUaDd4Ri9JK1p5R0JPTVdiYlcya1pINFBuU25qRzZRYk8zZHJielB0N21KdzVLUlBOcTk4NnRvcjJ2clp5cGhVd0pTMnQ4T2NCZFV2VWR0YmRnYmhxUmlST0JWekNQUHBQZ1BobUJmUEkxd0ZkalVNUlpFUEIrdEowd25EOVprL04yeEZZS3p4cC9GZUtzVmZyOXFWR1I0bVJCaFR0VjZiNkRR"; // Ganti dengan API key Anda
+
+    // Header untuk autentikasi
+    $header = array(
+        "Authorization: Bearer " . $token
+    );
+
+    // Menyusun query parameter id_user
+    $query = http_build_query(
+        array("id_user" => $id_user)
+    );
+
+    // Inisialisasi cURL
+    $ch = curl_init();
+
+    // Menentukan URL dengan query string yang sudah dibangun
+    curl_setopt($ch, CURLOPT_URL, "https://bukaolshop.net/api/v1/member/saldo?" . $query);
+
+    // Menyertakan header Authorization
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+
+    // Mengatur cURL untuk mengembalikan hasil response
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    // Eksekusi request dan menyimpan hasilnya
+    $hasil = curl_exec($ch);
+
+    // Menutup sesi cURL
+    curl_close($ch);
+
+    // Mengonversi hasil JSON menjadi array PHP
+    $responseData = json_decode($hasil, true);
+}
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transfer Bank</title>
-    <style>
-        /* CSS Styling */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #FFD9E8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            flex-direction: column;
-        }
-        .container {
-            background-color: #FFEFF5;
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
-            text-align: center;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        select, input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: 2px solid #FFC2D9;
-            border-radius: 5px;
-            box-sizing: border-box;
-        }
-        .btn {
-            background-color: #FF6E6E;
-            color: #fff;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 16px;
-        }
-
-        /* Styling untuk logo */
-        .logo {
-            margin-top: 0px;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .logo img {
-            width: 150px;  /* Atur lebar logo */
-            height: auto;
-        }
-
-        /* Styling untuk footer */
-        .footer-text {
-            font-size: 12px;
-            color: #555;
-            margin-top: -30px;
-            text-align: center;
-            font-weight: bold;
-        }
-
-/* Styling untuk popup */
-.popup {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: white;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 30px;
-  max-width: 350px;
-  width: 100%;
-  z-index: 100;
-  transition: bottom 0.3s ease-in-out;
-  display: none;
-}
-
-.popup.visible {
-  bottom: 10%;
-  display: block;
-}
-
-.popup-header {
-  font-size: 18px;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-/* Styling untuk container Nama dan Saldo di dalam popup */
-.user-info-container {
-  background-color: #f8f8f8;
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-}
-
-.user-info {
-  font-size: 16px;
-  margin-bottom: 10px;
-  font-weight: bold;
-  color: #444;
-}
-
-.user-info-container strong {
-  color: #FF6E6E;
-}
-
-/* Styling untuk tombol */
-.btn-cancel,
-.btn-confirm {
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 48%;
-}
-
-.btn-cancel {
-  background-color: red;
-  color: white;
-}
-
-.btn-confirm {
-  background-color: green;
-  color: white;
-}
-
-/* Memperbaiki gaya tombol dan popup */
-.popup-buttons {
-  display: flex;
-  justify-content: space-between;
-}
-
-/* Disabled button for 'Lanjut' */
-#btn-lanjut:disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
-}
-
-        .popup .btn-cancel, .popup .btn-confirm {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 48%;
-        }
-        .popup .btn-cancel {
-            background-color: red;
-            color: white;
-        }
-        .popup .btn-confirm {
-            background-color: green;
-            color: white;
-        }
-
-        /* Popup Pembayaran Berhasil Diproses */
-        .popup-berhasil {
-            position: fixed;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #4CAF50;
-            color: white;
-            padding: 20px 30px;
-            border-radius: 10px;
-            width: 300px;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            display: none;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            z-index: 9999;
-        }
-
-        .popup-berhasil .icon-check {
-            font-size: 40px;
-            color: white;
-            margin-bottom: 20px;
-        }
-
-        .popup-berhasil.show {
-            display: block;
-        }
-        /* CSS untuk memastikan teks berada di tengah dan bold */
-.popup .popup-header {
-    display: flex; /* Menggunakan Flexbox untuk centering */
-    justify-content: center; /* Menjaga teks di tengah secara horizontal */
-    align-items: center; /* Menjaga teks di tengah secara vertikal */
-    font-weight: bold; /* Membuat teks menjadi bold */
-    font-size: 18px; /* Anda bisa sesuaikan ukuran fontnya */
-}
-
-/* Styling khusus untuk Total Bayar */
-#total-bayar {
-    background-color: #ffeaa7; /* Warna kuning lembut */
-    color: #d63031; /* Warna teks merah */
-    font-weight: bold; /* Teks tebal */
-    font-size: 1.2em; /* Ukuran teks sedikit lebih besar */
-    text-align: right; /* Teks rata kanan */
-    border: 2px solid #fab1a0; /* Border merah muda */
-    padding: 10px; /* Ruang di dalam input */
-    border-radius: 5px; /* Sudut melengkung */
-}
-/* Styling khusus untuk Biaya Admin */
-#biaya-admin {
-    background-color: #dff9fb; /* Warna biru lembut */
-    color: #0984e3; /* Warna teks biru */
-    font-size: 1em; /* Ukuran teks normal */
-    text-align: right; /* Teks rata kanan */
-    border: 1px solid #74b9ff; /* Border biru muda */
-    padding: 8px; /* Ruang di dalam elemen */
-    border-radius: 5px; /* Sudut melengkung */
-    margin-top: 10px; /* Ruang atas untuk pemisahan */
-}
-
-    </style>
+    <title>Cari Saldo Member</title>
 </head>
 <body>
+    <h1>Cari Saldo Member Berdasarkan ID User</h1>
 
-<!-- Container Form Input -->
-<div class="container" id="transfer-form">
-    <h2>Transfer Bank</h2>
+    <!-- Form untuk mencari saldo berdasarkan ID User -->
+    <form method="POST" action="">
+        <label for="id_user">Masukkan ID User:</label>
+        <input type="text" id="id_user" name="id_user" required>
+        <button type="submit" name="submit">Cari</button>
+    </form>
 
-    <!-- Dropdown Kategori -->
-    <label for="kategori">Kategori</label>
-    <select id="kategori" onchange="updateBankEwalletOptions()">
-        <option value="" disabled selected>Pilih Kategori</option>
-        <option value="bank">Bank Account</option>
-        <option value="ewallet">Dompet Digital</option>
-    </select>
+    <hr>
 
-    <!-- Dropdown Bank/E-Wallet Tujuan -->
-    <label for="bank-ewallet">Bank/E-Wallet Tujuan</label>
-    <select id="bank-ewallet">
-        <option value="" disabled selected>Pilih Bank/E-Wallet</option>
-    </select>
+    <?php
+    // Jika data berhasil ditemukan
+    if (isset($responseData) && $responseData['code'] == 200) {
+        // Menampilkan informasi saldo member
+        echo "<h2>Detail Saldo Member</h2>";
+        echo "<p><strong>ID User:</strong> " . $responseData['id_user'] . "</p>";
+        echo "<p><strong>Email:</strong> " . $responseData['email_user'] . "</p>";
+        echo "<p><strong>Nama:</strong> " . $responseData['nama_user'] . "</p>";
+        echo "<p><strong>Transaksi Terakhir:</strong> " . $responseData['transaksi_terakhir'] . "</p>";
+        echo "<p><strong>Jumlah Saldo:</strong> " . number_format($responseData['jumlah_saldo'], 0, ',', '.') . " IDR</p>";
 
-    <!-- Input Nomor Rekening -->
-    <label for="rekening">Nomor Rekening</label>
-    <input type="text" id="rekening" placeholder="Masukkan nomor rekening">
-
-    <!-- Input Nama Pemilik Rekening -->
-    <label for="nama-pemilik">Nama Pemilik Rekening</label>
-    <input type="text" id="nama-pemilik" placeholder="Nama pemilik rekening">
-
-    <!-- Input Jumlah Transfer -->
-    <label for="jumlah">Jumlah Transfer (Rp)</label>
-    <input type="text" id="jumlah" placeholder="Masukkan nominal" oninput="formatRupiah(this)">
-    
-
-<!-- Tombol Lanjut yang dimulai dengan disabled -->
-<button class="btn" id="btn-lanjut" onclick="showPopup()" disabled>Lanjut</button>
-</div>
-
-<!-- Logo JAYAPAY -->
-<div class="logo">
-    <img src="https://sitegenius.cloud/ib/CtrlQRVb59.png" alt="JAYAPAY Logo">
-</div>
-
-<!-- Catatan Footer -->
-<div class="footer-text">Transfer ini diproses melalui layanan integrasi JAYAPAY</div>
-
-<!-- Popup Verifikasi Pembayaran -->
-<div class="popup" id="popup">
-    <div class="popup-content">
-        <div class="popup-header">
-            <strong>Verifikasi Pembayaran</strong>
-        </div>
-
-        <!-- Container untuk Menampilkan Nama dan Saldo -->
-        <div class="user-info-container">
-            <div class="user-info">
-                <strong id="nama-user-popup">Nama: </strong>
-            </div>
-            <div class="user-info">
-                <strong id="saldo-popup">Saldo Anda: </strong>
-            </div>
-        </div>
-
-        <!-- Menampilkan Informasi Transfer -->
-        <p><strong>Kategori:</strong> <span id="popup-kategori"></span></p>
-        <p><strong>Bank/E-Wallet Tujuan:</strong> <span id="popup-bank-ewallet"></span></p>
-        <p><strong>Nomor Rekening:</strong> <span id="popup-rekening"></span></p>
-        <p><strong>Nama Pemilik Rekening:</strong> <span id="popup-nama-pemilik"></span></p>
-        <p><strong>Jumlah Transfer (Rp):</strong> <span id="popup-jumlah"></span></p>
-        <!-- Biaya Admin -->
-<label for="biaya-admin">Biaya Admin (Rp)</label>
-<input type="text" id="biaya-admin" value="1.500" readonly>
-
-<!-- Total Bayar -->
-<label for="total-bayar">Total Bayar (Rp)</label>
-<input type="text" id="total-bayar" readonly>
-
-
-        <div class="popup-buttons">
-            <button class="btn-cancel" onclick="hidePopup()">Cancel</button>
-            <button class="btn-confirm" onclick="proceedPayment()">Lanjut Pembayaran</button>
-        </div>
-    </div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-<!-- Popup Pembayaran Berhasil Diproses -->
-<div class="popup-berhasil" id="popup-berhasil">
-    <span class="icon-check">✔</span>
-    <p>Pembayaran Berhasil Diproses!</p>
-</div>
-
-<script>
-    function updateBankEwalletOptions() {
-        const kategori = document.getElementById("kategori").value;
-        const bankEwalletSelect = document.getElementById("bank-ewallet");
-
-        // Clear current options
-        bankEwalletSelect.innerHTML = '<option value="" disabled selected>Pilih Bank/E-Wallet</option>';
-
-        if (kategori === "bank") {
-            const bankOptions = ["BCA", "BNI", "BRI", "Mandiri", "Bank Syariah Indonesia"];
-            bankOptions.forEach(bank => {
-                const option = document.createElement("option");
-                option.value = bank;
-                option.textContent = bank;
-                bankEwalletSelect.appendChild(option);
-            });
-        } else if (kategori === "ewallet") {
-            const ewalletOptions = ["GoPay", "OVO", "DANA", "ShopeePay", "LinkAja"];
-            ewalletOptions.forEach(wallet => {
-                const option = document.createElement("option");
-                option.value = wallet;
-                option.textContent = wallet;
-                bankEwalletSelect.appendChild(option);
-            });
-        }
-    }
-
-    function showPopup() {
-        const kategori = document.getElementById("kategori").value;
-        const bankEwallet = document.getElementById("bank-ewallet").value;
-        const rekening = document.getElementById("rekening").value;
-        const namaPemilik = document.getElementById("nama-pemilik").value;
-        const jumlah = document.getElementById("jumlah").value;
-
-        document.getElementById("popup-kategori").textContent = kategori === "bank" ? "Bank Account" : "Dompet Digital";
-        document.getElementById("popup-bank-ewallet").textContent = bankEwallet;
-        document.getElementById("popup-rekening").textContent = rekening;
-        document.getElementById("popup-nama-pemilik").textContent = namaPemilik || "Tidak ditemukan";
-        document.getElementById("popup-jumlah").textContent = jumlah;
-
-        // Menampilkan Popup Verifikasi Pembayaran
-        document.getElementById("popup").classList.add("visible");
-    }
-
-    function hidePopup() {
-        // Menyembunyikan Popup Verifikasi Pembayaran
-        document.getElementById("popup").classList.remove("visible");
-    }
-
-    function proceedPayment() {
-    document.getElementById("payment-loader").style.display = "block";
-
-    setTimeout(() => {
-        document.getElementById("payment-loader").style.display = "none";
-        document.getElementById("popup-berhasil").classList.add("show");
-
-        setTimeout(() => {
-            document.getElementById("popup-berhasil").classList.remove("show");
-            document.getElementById("transfer-form").style.display = "none";
-        }, 3000);
-    }, 3000);
-}
-
-
-        // Ambil data dari form
-        const kategori = document.getElementById("kategori").value;
-        const bankEwallet = document.getElementById("bank-ewallet").value;
-        const rekening = document.getElementById("rekening").value;
-        const namaPemilik = document.getElementById("nama-pemilik").value;
-        const jumlah = document.getElementById("jumlah").value.replace(/\./g, ''); // Hapus format Rupiah
-        const biayaAdmin = document.getElementById("biaya-admin").value.replace(/\./g, ''); // Hapus format Rupiah
-        const totalBayar = document.getElementById("total-bayar").value.replace(/\./g, ''); // Hapus format Rupiah
-
-        // Membuat pesan untuk dikirim ke Telegram
-        const message = `
-🔔 **Segera Lakukan Transfer!**
-- **Kategori:** ${kategori === "bank" ? "Bank Account" : "Dompet Digital"}
-- **Bank/E-Wallet Tujuan:** ${bankEwallet}
-- **Nomor Rekening:** ${rekening}
-- **Nama Pemilik Rekening:** ${namaPemilik || "Tidak ditemukan"}
-- **Jumlah Transfer:** Rp ${formatRupiahValue(jumlah)}
-- **Biaya Admin:** Rp ${formatRupiahValue(biayaAdmin)}
-- **Total Bayar:** Rp ${formatRupiahValue(totalBayar)}
-`;
-
-
-    function formatRupiah(input) {
-        let value = input.value.replace(/[^0-9]/g, ''); // Hanya angka yang diizinkan
-        if (value.length > 3) {
-            value = value.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-        }
-        input.value = value;
-    }
-    // Fungsi untuk memeriksa apakah semua input telah diisi dengan benar
-function checkFormValidity() {
-    const kategori = document.getElementById("kategori").value;
-    const bankEwallet = document.getElementById("bank-ewallet").value;
-    const rekening = document.getElementById("rekening").value;
-    const jumlah = document.getElementById("jumlah").value;
-
-    // Memastikan semua field terisi
-    if (kategori && bankEwallet && rekening && jumlah) {
-        // Aktifkan tombol jika semua input terisi
-        document.getElementById("btn-lanjut").disabled = false;
-    } else {
-        // Nonaktifkan tombol jika ada input yang kosong
-        document.getElementById("btn-lanjut").disabled = true;
-    }
-}
-
-// Event listener untuk memeriksa validitas setiap kali ada perubahan input
-document.getElementById("kategori").addEventListener("change", checkFormValidity);
-document.getElementById("bank-ewallet").addEventListener("change", checkFormValidity);
-document.getElementById("rekening").addEventListener("input", checkFormValidity);
-document.getElementById("jumlah").addEventListener("input", checkFormValidity);
-
-<?php
-header('Content-Type: application/json');
-
-// Token API
-$token = "cGxoOEZ3eW4vcVVzMDRTRlR1TkdqRm5HS1E5MVk1VVRackRQMk1taWpyQ2tYcUpHTnMyY0o0WEQrbklpV3JXM3JielB0N21KdzVLUlBOcTk4NnRvcjl0emFsL0puTktES0FFVDFld2ptYzcxMHQ4NG1Nc1crR21JK0tpbFdyVlM2R21jNlFDWm44eXNjdkdrdDBVa3paVGp0SHczd3ZoQTV2RCtURGVLc2ZLOXhrbVlNcFpEUDVkcVFvcjJrazh0";
-
-// Ambil parameter id_user
-$id_user = $_GET['id_user'] ?? null;
-
-if (!$id_user) {
-    echo json_encode(["status" => "error", "message" => "ID user tidak ditemukan."]);
-    exit;
-}
-
-$header = array("Authorization: Bearer " . $token);
-$query = http_build_query(array("id_user" => $id_user));
-
-$ch = curl_init();
-curl_setopt($ch, CURLOPT_URL, "https://bukaolshop.net/api/v1/member/saldo?" . $query);
-curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-
-// Kirim hasil API ke client
-echo $response;
-
-
-function getUserInfo(callback) {
-    fetch('get-saldo.php?id_user=xxxxx')
-        .then(response => response.json())
-        .then(data => {
-            if (data.code === 200) {
-                document.getElementById("nama-user-popup").textContent = `Nama: ${data.nama_user}`;
-                document.getElementById("saldo-popup").textContent = `Saldo Anda: Rp ${formatRupiahValue(data.jumlah_saldo.toString())}`;
-                callback(data.jumlah_saldo);
-            } else {
-                alert("Gagal mengambil data saldo: " + data.status);
+        // Menampilkan riwayat saldo jika ada
+        if (!empty($responseData['riwayat_saldo'])) {
+            echo "<h3>Riwayat Saldo</h3>";
+            foreach ($responseData['riwayat_saldo'] as $riwayat) {
+                echo "<p><strong>Informasi:</strong> " . $riwayat['informasi_catatan'] . "</p>";
+                echo "<p><strong>Jumlah Dana:</strong> " . number_format($riwayat['jumlah_dana'], 0, ',', '.') . " IDR</p>";
+                echo "<p><strong>Tanggal:</strong> " . $riwayat['tanggal'] . "</p>";
             }
-        })
-        .catch(error => console.error('Error:', error));
-}
-
-function validateRekening() {
-    const rekening = document.getElementById("rekening").value;
-    const rekeningPattern = /^[0-9]{10,15}$/; // Nomor rekening biasanya 10-15 digit
-    if (!rekeningPattern.test(rekening)) {
-        alert("Nomor rekening tidak valid. Harap masukkan angka antara 10 hingga 15 digit.");
-        return false;
-    }
-    return true;
-}
-
-// Fungsi untuk menampilkan popup dan memeriksa apakah saldo mencukupi
-function showPopup() {
-    const kategori = document.getElementById("kategori").value;
-    const bankEwallet = document.getElementById("bank-ewallet").value;
-    const rekening = document.getElementById("rekening").value;
-    const namaPemilik = document.getElementById("nama-pemilik").value;
-    const jumlah = document.getElementById("jumlah").value.replace(/\./g, ''); // Hapus titik (untuk format Rupiah)
-
-    // Mengambil saldo pengguna dari API
-    getUserInfo(function(saldo) {
-        // Cek apakah saldo mencukupi
-        if (parseInt(jumlah) > parseInt(saldo)) {
-            alert("Saldo Anda tidak mencukupi untuk melanjutkan transfer.");
-            return; // Hentikan proses jika saldo kurang
+        } else {
+            echo "<p><strong>Riwayat saldo tidak tersedia.</strong></p>";
         }
-
-        // Update data di popup
-        document.getElementById("popup-kategori").textContent = kategori === "bank" ? "Bank Account" : "Dompet Digital";
-        document.getElementById("popup-bank-ewallet").textContent = bankEwallet;
-        document.getElementById("popup-rekening").textContent = rekening;
-        document.getElementById("popup-nama-pemilik").textContent = namaPemilik || "Tidak ditemukan";
-        document.getElementById("popup-jumlah").textContent = jumlah;
-
-        // Menampilkan popup verifikasi pembayaran
-        document.getElementById("popup").classList.add("visible");
-    });
-}
-
-
-// Fungsi untuk menampilkan format rupiah
-function formatRupiahValue(value) {
-    let formatted = value.toString().replace(/[^0-9]/g, ''); // Menghapus karakter non-numerik
-    return formatted.replace(/\B(?=(\d{3})+(?!\d))/g, "."); // Format menjadi Rupiah
-}
-
-// Fungsi untuk mengupdate nilai input ke dalam popup
-function showPopup() {
-    const kategori = document.getElementById("kategori").value;
-    const bankEwallet = document.getElementById("bank-ewallet").value;
-    const rekening = document.getElementById("rekening").value;
-    const namaPemilik = document.getElementById("nama-pemilik").value;
-    const jumlah = document.getElementById("jumlah").value;
-
-    // Update data di popup
-    document.getElementById("popup-kategori").textContent = kategori === "bank" ? "Bank Account" : "Dompet Digital";
-    document.getElementById("popup-bank-ewallet").textContent = bankEwallet;
-    document.getElementById("popup-rekening").textContent = rekening;
-    document.getElementById("popup-nama-pemilik").textContent = namaPemilik || "Tidak ditemukan";
-    document.getElementById("popup-jumlah").textContent = jumlah;
-
-    // Memanggil fungsi untuk mendapatkan nama dan saldo pengguna
-    getUserInfo();
-
-    // Tampilkan popup verifikasi pembayaran
-    document.getElementById("popup").classList.add("visible");
-}
-
-// Menyembunyikan popup
-function hidePopup() {
-    document.getElementById("popup").classList.remove("visible");
-}
-function sendToTelegram(message) {
-    const botToken = '7687419234:AAHb3hgTO-AEHAl9PCF632Uj6jijDvdyZE4'; // Token bot Telegram Anda
-    const chatId = '1881778951'; // Chat ID Anda
-
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
-
-    // Mengirimkan request ke API Telegram
-    fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            console.log('Pesan berhasil dikirim ke Telegram');
-        })
-        .catch(error => {
-            console.error('Ada masalah dengan pengiriman pesan ke Telegram:', error);
-        });
-}
-
-function calculateTotal() {
-    const jumlah = document.getElementById("jumlah").value.replace(/\./g, '');
-    const biayaAdmin = jumlah > 100000 ? 5000 : 1500; // Contoh logika
-    const totalBayar = parseInt(jumlah) + biayaAdmin;
-
-    document.getElementById("biaya-admin").value = formatRupiahValue(biayaAdmin.toString());
-    document.getElementById("total-bayar").value = formatRupiahValue(totalBayar.toString());
-}
-
-
-// Event listener untuk menghitung total bayar setiap kali jumlah transfer berubah
-document.getElementById("jumlah").addEventListener("input", calculateTotalBayar);
-
-</script>
+    } elseif (isset($responseData) && $responseData['code'] == 400) {
+        // Menampilkan pesan error jika ID User tidak ditemukan
+        echo "<p><strong>Kesalahan:</strong> Pastikan ID User yang dimasukkan valid.</p>";
+    } elseif (isset($responseData) && $responseData['code'] == 404) {
+        // Menampilkan pesan jika data tidak ditemukan
+        echo "<p><strong>Data tidak ditemukan</strong> untuk ID User yang diberikan.</p>";
+    } elseif (isset($responseData) && $responseData['code'] != 200) {
+        // Menampilkan pesan kesalahan lainnya
+        echo "<p><strong>Terjadi kesalahan saat mengakses API. Coba lagi nanti.</strong></p>";
+    }
+    ?>
 
 </body>
 </html>
